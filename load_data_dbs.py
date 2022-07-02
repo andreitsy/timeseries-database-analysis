@@ -43,7 +43,7 @@ def connect_postgress():
     return engine
 
 def read_csv_dump(path_to_file: Path) -> pd.DataFrame:
-    df = pd.read_csv(filepath, index_col=False)
+    df = pd.read_csv(path_to_file, index_col=False)
     df.rename(columns={"Time": "TIME"}, inplace=True)
     df["OMDSEQ"] = df.index
     df.columns = map(str.lower, df.columns)
