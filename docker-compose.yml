@@ -6,23 +6,55 @@ volumes:
 
 services:
   postgres_db:
-    image: postgres
+    image: postgres:15beta2-bullseye
+    container_name: postgresdb
     environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgrespw
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
     volumes:
-      - ./db_pg:/var/lib/postgresql
+      - ./postgres_db:/var/lib/postgresql
       - ./create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+
+  influxdb:
+    image: influxdb:2.3.0
+    container_name: influxdb
+    ports:
+    - ${INFLUX_PORT}:${INFLUX_PORT}
+    volumes:
+      - ./influx_db:/var/lib/influxdb2
+
+  mongodb:
+    image: mongo:4.2.21-bionic
+    container_name: mongodb
+    environment:
+    - PUID=1000
+    - PGID=1000
+    volumes:
+    - ./mongo_db:/data/db
+    ports:
+    - ${MONGODB_PORT}:${MONGODB_PORT}
+
   dataloading:
     build: .
-    command: python load_data_dbs.py
+    container_name: dataloading
+    command: python /code/scripts/load_data_dbs.py
     volumes:
       - ./data:/code/data
+      - ./scripts:/code/scripts
     environment:
-      - POSTGRES_HOST=postgres_db
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgrespw
+      - INFLUXDB_V2_URL=http://${INFLUX_HOST}:${INFLUX_PORT}
+      - INFLUXDB_V2_TOKEN
+      - INFLUXDB_V2_ORG
+      - INFLUX_BUCKET
+      - POSTGRES_HOST
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - MONGODB_PORT
+      - MONGODB_HOST
+      - DUMP_DATA
     depends_on:
       - postgres_db
+      - influxdb
+      - mongodb
