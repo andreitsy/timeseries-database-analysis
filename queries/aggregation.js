@@ -6,3 +6,22 @@ db.trades.aggregate([
     }
   }
 ])
+
+db.quotes.aggregate([
+  {
+    $addFields: {
+      sum_price: { $add: ['$ask_price', '$bid_price'] }
+    }
+  },
+  {
+    $addFields: {
+      mid_price: { $multiply: ["$sum_price", 0.5] }
+    }
+  },
+  {
+    $group: {
+      _id: "$symbol",
+      avg: { $avg: "$mid_price"}
+    }
+  }
+])

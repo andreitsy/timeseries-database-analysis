@@ -53,29 +53,58 @@ else:
         SIDE = 0
 ```
 
-- Агрегации: средняя price/mid price за один день или VWAP
+- Агрегации: средняя price/mid price за один день
 
 Все вычисления должны быть сделаны group by **SYMBOL**.
 Данные в базы могут быть загружены с помощью [скрипта](scripts/load_data_dbs.py). При этом пример исходных файлов лежит в директории *data*.
+
+Количечество записей в тестовом датасете было `20,225,508` в **trades**, и `396,613,627` в **quotes**
 
 ## SQL
 В качестве SQL решения использую **PostgresSQL**.
 И схема двух таблиц **quotes** и **trades** приведена выше.
 
+```sql
+CREATE TABLE IF NOT EXISTS quotes (
+  SYMBOL char(20) NOT NULL,
+  TIME timestamp NOT NULL,
+  OMDSEQ bigint NOT NULL,
+  ASK_SIZE double precision,
+  ASK_PRICE double precision,
+  BID_SIZE double precision,
+  BID_PRICE double precision,
+  PRIMARY KEY (TIME, OMDSEQ, SYMBOL)
+);
+
+CREATE TABLE IF NOT EXISTS trades (
+  SYMBOL char(20) NOT NULL,
+  TIME timestamp NOT NULL,
+  OMDSEQ bigint NOT NULL,
+  SIZE double precision,
+  PRICE double precision,
+  PRIMARY KEY (TIME, OMDSEQ, SYMBOL)
+);
+```
+
 При этом я создаю индекс для поля **SYMBOL**, поскольку частыми операциями являются группировки по этому полю, либо же join'ы.
+
+```
+CREATE INDEX idx_trades ON trades(SYMBOL);
+CREATE INDEX idx_quotes ON quotes(SYMBOL);
+```
 
 Загрузка данных за 1 день заняла примерно 30 минут.
 
 ### Агрегация:
 ```sql
 SELECT 
-    AVG(price) AS total
+    symbol, AVG((ask_price + bid_price)/2) AS mid_price
 FROM 
-    trades
+    quotes
 GROUP BY
-	symbol;
+    symbol;
 ```
-Время работы для dataset'a размеров в 100 записей.
+Среднее время работы данной квери для dataset'a на `396,613,627` кортежей занимает `513929.408 ms (08:33.929)`.
 
 
 ## No-SQL
@@ -87,16 +116,26 @@ GROUP BY
 
 ### Агрегация:
 ```js
-db.trades.aggregate([
+db.quotes.aggregate([
+  {
+    $addFields: {
+      sum_price: { $add: ['$ask_price', '$bid_price'] }
+    }
+  },
+  {
+    $addFields: {
+      mid_price: { $multiply: ["$sum_price", 0.5] }
+    }
+  },
   {
     $group: {
       _id: "$symbol",
-      avg: { $avg: "$price" }
+      avg: { $avg: "$mid_price"}
     }
   }
 ])
 ```
-Время работы для dataset'a размеров в 100 записей.
+Среднее время работы данной квери для dataset'a на `396,613,627` записей занимает  
 
 
 ## Time Series Database
@@ -108,31 +147,43 @@ db.trades.aggregate([
 
 ### Агрегация:
 ```flux
-from(bucket:"quotes_trades")
+ask_stream = from(bucket:"quotes_trades")
     |> range(start: 0, stop: now())
-    |> filter(fn: (r) => r._measurement == "trades" and r._field == "price")
+    |> filter(fn: (r) => r._measurement == "quotes" and r._field == "ask_price")
     |> mean()
+bid_stream = from(bucket:"quotes_trades")
+    |> range(start: 0, stop: now())
+    |> filter(fn: (r) => r._measurement == "quotes" and r._field == "bid_price")
+    |> mean()
+
+join(tables: {ask: ask_stream, bid: bid_stream}, on: ["symbol"])
+    |> map(fn: (r) => ({symbol: r.symbol, _time: r._time, 
+                        mid_price: (r._value_ask + r._value_bid) / 2.0}))
+    |> yield()
 ```
-Время работы для dataset'a размеров в 100 записей.
+Среднее время работы данной квери для dataset'a на `396,613,627` тиков занимает 
 
 ## Результаты
 
 ### Замеры времени
-Для анализа производительности были загружены данные за 1 день (39Gb заняли csv-файлы).
-|                 |Postgres|Mongo|Influx|
-|-----------------|:------:|:---:|:----:|
-|data loading     |  65m   |   m |   m  |
-|aggregation query|        |     |      |
-|lee and ready    |        |     |      |
-*для кверей считалось среднее время за 10 запусков*
+Для анализа производительности были загружены данные за 1 день (csv-файлы размером 39Gb).
+|                       |Postgres   |Mongo      |Influx     |
+|-----------------------|:---------:|:---------:|:---------:|
+|data loading seq.      |08h:11m:51s|04h:00m:00s|XXh:XXm:XXs|
+|price average query    |00h:00m:03s|XXh:XXm:XXs|XXh:XXm:XXs|
+|mid price average query|00h:05m:57s|XXh:XXm:XXs|XXh:XXm:XXs|
+|lee and ready query    |XXh:XXm:XXs|XXh:XXm:XXs|XXh:XXm:XXs|
+
+*для кверей считалось среднее время за 5 запусков*
 
 ### Общие выводы:
 
 #### Плюсы SQL для хранения временных рядов
-- Иерархические данные временных рядов естественным образом сочетаются с реляционными таблицами. 
-- Если ременной ряд основан на транзакционных данных, то будет выгодно хранить временные ряды в той же базе данных для удобства проверки, перекрестных ссылок и т.д. Как вариант стоило посмотреть в сторону **Timescale**.
+- Иерархические данные временных рядов естественным образом сочетаются с реляционными таблицами 
+- Если временной ряд основан на транзакционных данных, то будет выгодно хранить временные ряды в той же базе данных для удобства проверки, перекрестных ссылок и т.д. Как вариант стоило посмотреть в сторону **Timescale**
 
 #### Плюсы No-SQL для хранения  временных рядов
-- Записи выполняются быстро, поскольку нет нужды перестраивать индексы
+- Скорость обработки аналитических запросов выше
+- Запись (append) в базу выполняются быстро, поскольку нет нужды перестраивать индексы
 - Требование миграции при изменении схемы
 - Более производительное готовое решение, потому с меньшей вероятностью можно создать неудобную схему

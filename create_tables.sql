@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS quotes (
   ASK_PRICE double precision,
   BID_SIZE double precision,
   BID_PRICE double precision,
-  PRIMARY KEY (TIME, OMDSEQ, SYMBOL)
+  PRIMARY KEY (SYMBOL, TIME, OMDSEQ)
 );
 
 CREATE TABLE IF NOT EXISTS trades (
@@ -16,5 +16,8 @@ CREATE TABLE IF NOT EXISTS trades (
   OMDSEQ bigint NOT NULL,
   SIZE double precision,
   PRICE double precision,
-  PRIMARY KEY (TIME, OMDSEQ, SYMBOL)
+  PRIMARY KEY (SYMBOL, TIME, OMDSEQ)
 );
+
+CREATE INDEX idx_trades ON trades(SYMBOL);
+CREATE INDEX idx_quotes ON quotes(SYMBOL);
