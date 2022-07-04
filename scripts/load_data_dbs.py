@@ -157,9 +157,12 @@ def load_data_to_mongo(files_dir: Path):
     except Exception as error:
         logger.error("Error with mongo", exc_info=error)
 
+
 def logging_setup():
-    logging.basicConfig(stream=sys.stdout,
-                        level=logging.DEBUG)
+    logging.basicConfig(
+        stream=sys.stdout,
+        format='%(asctime)s %(levelname)-8s %(message)s',
+        level=logging.DEBUG)
 
 
 if __name__ == "__main__":
