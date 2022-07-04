@@ -10,8 +10,8 @@ docker compose up --build -d
 Далее нужно создать логин для `Influx DB`, зарегистрировавшись по адресу [localhost:8086](localhost:8086), получить токен и стандартный бакет `quotes_trades` и организацию.
 Далее данные переменные необходимо указать в `.env` [файле](.env)
 ```
-INFLUXDB_V2_TOKEN=<YOUR_TOKEN>
-INFLUXDB_V2_ORG=omd
+INFLUXDB_V2_TOKEN=<your_token>
+INFLUXDB_V2_ORG=<your_organisation>
 INFLUX_BUCKET=quotes_trades
 ```
 Теперь можно перезагрузить контейнеры
