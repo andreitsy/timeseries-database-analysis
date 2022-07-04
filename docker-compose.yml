@@ -39,6 +39,7 @@ services:
     build: .
     container_name: dataloading
     command: python /code/scripts/load_data_dbs.py
+    tty: true
     volumes:
       - ./data:/code/data
       - ./scripts:/code/scripts

@@ -1,3 +1,4 @@
+
 SELECT 
     symbol, AVG(price) AS average_price
 FROM 
