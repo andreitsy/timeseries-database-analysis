@@ -64,10 +64,10 @@ def load_data_to_postgress(files_dir: Path):
     engine = None
     try:
         engine = connect_postgress()
-        for file in files:
+        for i, file in enumerate(files):
             filepath = files_dir / file
             df = read_csv_dump(filepath)
-            logger.info(f"Loading {filepath}...")
+            logger.info(f"Loading {i} out of {len(files)} {filepath}...")
             if file.endswith("qte.csv"):
                 with engine.begin() as connection:
                     df.to_sql('quotes', con=connection,
@@ -112,10 +112,10 @@ def load_data_to_influx(files_dir: Path):
         logger.info(f"Client influx:\n token={token}\n org={org}"
                     f"\n bucket={bucket} \n url={url_influx}")
         with InfluxDBClient.from_env_properties(debug=False) as client:
-            for file in files:
+            for i, file in enumerate(files):
                 filepath = files_dir / file
                 df = read_csv_dump(filepath)
-                logger.info(f"Loading {filepath}...")
+                logger.info(f"Loading {i} out of {len(files)} {filepath}...")
                 if file.endswith("qte.csv"):
                     parse_row = parse_qte_influx_row
                 elif file.endswith("trd.csv"):
@@ -143,10 +143,10 @@ def load_data_to_mongo(files_dir: Path):
         client = MongoClient(
             f'mongodb://{os.environ["MONGODB_HOST"]}:{os.environ["MONGODB_PORT"]}/')
         db = client["quotes_trades"]
-        for file in files:
+        for i, file in enumerate(files):
             filepath = files_dir / file
             df = read_csv_dump(filepath)
-            logger.info(f"Loading {filepath}...")
+            logger.info(f"Loading {i} out of {len(files)} {filepath}...")
             if file.endswith("qte.csv"):
                 collection = db["quotes"]
             elif file.endswith("trd.csv"):

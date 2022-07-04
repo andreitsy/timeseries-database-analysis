@@ -20,9 +20,14 @@ docker compose down
 docker compose up --build -d
 ```
 
-После этого можно загрузить данные, зайдя в контейнер `dataloading`
+После этого можно загрузить данные, запустив скрипт в `dataloading`
 ```bash
-docker exec -it dataloading bash
+docker exec -it dataloading python /code/scripts/load_data_dbs.py
+```
+
+Измерить перфоманс можно воспользовашись скриптом
+```bash
+docker exec -it dataloading python /code/scripts/measure_time.py
 ```
 
 В случае ошибок можно посмотреть на логи с помощью команды
