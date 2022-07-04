@@ -172,7 +172,7 @@ join(tables: {ask: ask_stream, bid: bid_stream}, on: ["symbol"])
 |-----------------------|:---------:|:---------:|:---------:|
 |data loading seq.      |08h:11m:51s|04h:00m:00s|XXh:XXm:XXs|
 |price average query    |00h:00m:03s|XXh:XXm:XXs|XXh:XXm:XXs|
-|mid price average query|00h:05m:57s|XXh:XXm:XXs|XXh:XXm:XXs|
+|mid price average query|00h:02m:40s|XXh:XXm:XXs|XXh:XXm:XXs|
 |lee and ready query    |    N/A    |    N/A    |    N/A    |
 
 *для кверей считалось среднее время за 5 запусков*

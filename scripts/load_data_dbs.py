@@ -111,7 +111,7 @@ def load_data_to_influx(files_dir: Path):
         url_influx = os.environ["INFLUXDB_V2_URL"]
         logger.info(f"Client influx:\n token={token}\n org={org}"
                     f"\n bucket={bucket} \n url={url_influx}")
-        with InfluxDBClient.from_env_properties(debug=True) as client:
+        with InfluxDBClient.from_env_properties(debug=False) as client:
             for file in files:
                 filepath = files_dir / file
                 df = read_csv_dump(filepath)
@@ -121,10 +121,10 @@ def load_data_to_influx(files_dir: Path):
                 elif file.endswith("trd.csv"):
                     parse_row = parse_trd_influx_row
                 with client.write_api(
-                    write_options=WriteOptions(batch_size=5000,
+                    write_options=WriteOptions(batch_size=50_000,
                                                flush_interval=10_000,
                                                jitter_interval=2_000,
-                                               retry_interval=5_000,
+                                               retry_interval=2_000,
                                                max_retries=5,
                                                max_retry_delay=30_000)) as write_client:
                     data = (rx
