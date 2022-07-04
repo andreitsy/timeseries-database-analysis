@@ -38,8 +38,7 @@ services:
   dataloading:
     build: .
     container_name: dataloading
-    command: python /code/scripts/load_data_dbs.py
-    tty: true
+    command: tail -f /dev/null
     volumes:
       - ./data:/code/data
       - ./scripts:/code/scripts
