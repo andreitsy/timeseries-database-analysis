@@ -1,11 +1,11 @@
-// trades calc
+// price aggregate
 from(bucket:"quotes_trades")
     |> range(start: 0, stop: now())
     |> filter(fn: (r) => r._measurement == "trades" and r._field == "price")
     |> mean()
     |> yield()
 
-// mid price calc
+// mid price aggregate
 ask_stream = from(bucket:"quotes_trades")
     |> range(start: 0, stop: now())
     |> filter(fn: (r) => r._measurement == "quotes" and r._field == "ask_price")

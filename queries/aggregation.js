@@ -1,3 +1,4 @@
+// price aggregate
 db.trades.aggregate([
   {
     $group: {
@@ -7,6 +8,7 @@ db.trades.aggregate([
   }
 ])
 
+// mid price aggregate
 db.quotes.aggregate([
   {
     $addFields: {

@@ -14,7 +14,7 @@ services:
       - POSTGRES_PASSWORD
     volumes:
       - ./postgres_db:/var/lib/postgresql
-      - ./create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - ./queries/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
 
   influxdb:
     image: influxdb:2.3.0

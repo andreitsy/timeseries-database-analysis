@@ -23,11 +23,12 @@
 ## Hardware:
 
 Я использую GPC instance на ssd
-|     config   |     value     |
-|--------------|:-------------:|
-| Machine type | n2-standard-4 |
-| vCPU         |       4       |
-| Memory       |     16Gb      |
+|     config   |          value          |
+|--------------|:-----------------------:|
+| Machine type |      n2-standard-4      |
+| vCPU         |            4            |
+| Memory       |           16Gb          |
+| Storage      |150Gb SSD persistent disk|
 
 
 
@@ -88,7 +89,7 @@ CREATE TABLE IF NOT EXISTS trades (
 
 При этом я создаю индекс для поля **SYMBOL**, поскольку частыми операциями являются группировки по этому полю, либо же join'ы.
 
-```
+```sql
 CREATE INDEX idx_trades ON trades(SYMBOL);
 CREATE INDEX idx_quotes ON quotes(SYMBOL);
 ```
@@ -172,7 +173,7 @@ join(tables: {ask: ask_stream, bid: bid_stream}, on: ["symbol"])
 |data loading seq.      |08h:11m:51s|04h:00m:00s|XXh:XXm:XXs|
 |price average query    |00h:00m:03s|XXh:XXm:XXs|XXh:XXm:XXs|
 |mid price average query|00h:05m:57s|XXh:XXm:XXs|XXh:XXm:XXs|
-|lee and ready query    |XXh:XXm:XXs|XXh:XXm:XXs|XXh:XXm:XXs|
+|lee and ready query    |    N/A    |    N/A    |    N/A    |
 
 *для кверей считалось среднее время за 5 запусков*
 
