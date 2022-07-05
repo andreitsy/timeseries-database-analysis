@@ -127,7 +127,7 @@ CREATE INDEX idx_trades ON trades(SYMBOL);
 CREATE INDEX idx_quotes ON quotes(SYMBOL);
 ```
 
-Загрузка данных за 1 день заняла примерно 30 минут.
+Загрузка данных за 1 день заняла примерно 8 часов 11 минут.
 
 ### Агрегация:
 ```sql
