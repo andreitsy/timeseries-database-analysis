@@ -205,12 +205,12 @@ join(tables: {ask: ask_stream, bid: bid_stream}, on: ["symbol"])
 ### Замеры времени
 Для анализа производительности были загружены данные за 1 день (csv-файлы размером 39Gb).
 
-|                                             |Postgres   |Mongo      |Influx     |
-|---------------------------------------------|:---------:|:---------:|:---------:|
-|data loading seq. (`416,839,135` ticks)      |   8h11m   |   2h15m   |   15h11m  |
-|price average query (`20,225,508` ticks)     |   3.9s    |   20.2s   |   0.9s    |
-|mid price average query (`396,613,627` ticks)|   461.2s  |   927.5s  |   25.64s  |
-|lee and ready query (`416,839,135` ticks)    |   TODO    |   TODO    |   TODO    |
+|                                             |Postgres  |Mongo      |Influx     |
+|---------------------------------------------|:--------:|:---------:|:---------:|
+|data loading seq. (`416,839,135` ticks)      |   8h11m  |   2h15m   |   15h11m  |
+|price average query (`20,225,508` ticks)     |   3.74s  |   20.25s  |   1.09s   |
+|mid price average query (`396,613,627` ticks)|   449.21s|   795.94s |   20.64s  |
+|lee and ready query (`416,839,135` ticks)    |   TODO   |   TODO    |   TODO    |
 
 *для кверей считалось среднее время за 5 запусков*
 
