@@ -138,7 +138,7 @@ FROM
 GROUP BY
     symbol;
 ```
-Среднее время работы данной квери для dataset'a на `396,613,627` кортежей занимает `513929.408 ms (08:33.929)`.
+Среднее время работы данной квери для dataset'a на `396,613,627` кортежей занимает 4 минуты.
 
 *Существует расширение для Postgres DB, которое улучшает работу с временными данными [Timescale](https://github.com/timescale/timescaledb), но я не проверял насколько оно ускоряет работу*
 
@@ -170,7 +170,8 @@ db.quotes.aggregate([
   }
 ])
 ```
-Среднее время работы данной квери для dataset'a на `396,613,627` записей занимает  
+
+Среднее время работы данной квери для dataset'a на `396,613,627` записей занимает примерно 15 минут.
 
 *Версия Mongo DB 5.0 содержит [Time Series Collections](https://www.mongodb.com/docs/manual/core/timeseries-collections/), но я не проверял её работу*
 
@@ -197,7 +198,7 @@ join(tables: {ask: ask_stream, bid: bid_stream}, on: ["symbol"])
                         mid_price: (r._value_ask + r._value_bid) / 2.0}))
     |> yield()
 ```
-Среднее время работы данной квери для dataset'a на `396,613,627` тиков занимает.
+Среднее время работы данной квери для dataset'a на `396,613,627` тиков занимает около минуты, что намного быстрее чем примеры выше.
 
 ## Результаты
 
@@ -205,10 +206,10 @@ join(tables: {ask: ask_stream, bid: bid_stream}, on: ["symbol"])
 Для анализа производительности были загружены данные за 1 день (csv-файлы размером 39Gb).
 |                       |Postgres   |Mongo      |Influx     |
 |-----------------------|:---------:|:---------:|:---------:|
-|data loading seq.      |08h:11m:51s|02h:15m:56s|02h:15m:56s|
-|price average query    |00h:00m:03s|XXh:XXm:XXs|XXh:XXm:XXs|
-|mid price average query|00h:02m:40s|XXh:XXm:XXs|XXh:XXm:XXs|
-|lee and ready query    |    N/A    |    N/A    |    N/A    |
+|data loading seq.      | 8h:11m:51s| 2h:15m:56s|15h:15m:56s|
+|price average query    |   4.49s   |   22.5s   |    1.4s   |
+|mid price average query|   333.2s  |   927.5s  |   32.64s  |
+|lee and ready query    |   TODO    |   TODO    |   TODO    |
 
 *для кверей считалось среднее время за 5 запусков*
 
